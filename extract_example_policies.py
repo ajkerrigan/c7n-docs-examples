@@ -74,18 +74,29 @@ class CodeBlockVisitor(docutils.nodes.GenericNodeVisitor):
         pass
 
 
-def _trim_path(part):
+def _get_target_dir(full_path, base_path):
     """
-    Filter out path segments that contain the word
-    `example` - it's redundant in a repository dedicated
-    to example policies.
+    Given a file path and base path:
+
+    1. Determine the parent directory's path relative to the base
+    2. Trim out any directory segments containing the word "example"
+    3. Return the trimmed path relative to the current directory
+
+    Example:
+
+    >>> _get_target_dir(
+    ...     '/src/cloud-custodian/docs/source/aws/examples/policy.rst',
+    ...     '/src/cloud-custodian/docs/source'
+    ... )
+    PosixPath('aws')
     """
-    return "example" not in part
+
+    relative_dir = Path(full_path).relative_to(base_path).parent
+    trimmed_parts = (p for p in relative_dir.parts if "example" not in p)
+    return Path().joinpath(*trimmed_parts)
 
 
-@click.argument(
-    'base_dir', type=click.Path(file_okay=False, dir_okay=True)
-)
+@click.argument("base_dir", type=click.Path(file_okay=False, dir_okay=True))
 @click.command()
 def cli(base_dir):
     """
@@ -102,14 +113,11 @@ def cli(base_dir):
     parser = docutils.parsers.rst.Parser()
     pattern = "**/examples/*.rst"
 
-    print(base_dir)
     for f in Path(base_dir).glob(pattern):
         logger.info(f"Extracting {f.name}...")
         document = docutils.utils.new_document(f.name, default_settings)
         parser.parse(f.read_text(), document)
-        target_dir = (
-            Path().joinpath(*filter(_trim_path, f.relative_to(base_dir).parts[:-1]))
-        )
+        target_dir = _get_target_dir(f, base_dir)
         visitor = CodeBlockVisitor(document, target_dir)
         document.walk(visitor)
 
