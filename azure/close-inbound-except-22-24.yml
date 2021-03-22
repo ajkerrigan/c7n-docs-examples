@@ -1,0 +1,12 @@
+policies:
+ - name: close-inbound-except-22-24
+   resource: azure.networksecuritygroup
+   filters:
+    - type: ingress
+      exceptPorts: '22-24'
+      match: 'any'
+      access: 'Allow'
+   actions:
+    - type: close
+      exceptPorts: '22-24'
+      direction: 'Inbound'

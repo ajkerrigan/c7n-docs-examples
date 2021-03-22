@@ -1,0 +1,53 @@
+policies:
+
+ - name: vpc-peering-cross-account-checker-real-time
+   resource: peering-connection
+   mode:
+      type: cloudtrail
+      events:
+         - source: ec2.amazonaws.com
+           event: CreateVpcPeeringConnection
+           ids: 'responseElements.vpcPeeringConnection.vpcPeeringConnectionId'
+      timeout: 90
+      memory: 256
+      role: arn:aws:iam::{account_id}:role/Cloud_Custodian_EC2_Lambda_Role
+   description: |
+     When a new peering connection is created the Accepter and Requester account
+     numbers are compared and if they aren't both internally owned accounts then the
+     cloud and security teams are notified to investigate and delete the peering connection.
+   filters:
+     - or:
+         - type: event
+           key: "detail.responseElements.vpcPeeringConnection.accepterVpcInfo.ownerId"
+           op: not-in
+           value_from:
+             url: s3://s3bucketname/AccountNumbers.csv
+             format: csv2dict
+         - type: event
+           key: "detail.responseElements.vpcPeeringConnection.requesterVpcInfo.ownerId"
+           op: not-in
+           value_from:
+             url: s3://s3bucketname/AccountNumbers.csv
+             format: csv2dict
+   actions:
+      - type: notify
+        template: default.html
+        priority_header: 1
+        subject: "ATTN!! External VPC Peering Violation [custodian {{ account }} - {{ region }}]"
+        violation_desc: |
+            VPC Peers are not to be setup to or from external AWS accounts
+            so this policy verifies that both the source and destination
+            accounts are internally owned. If the peering connection is going
+            to/from an external account, this policy will email the Cloud and
+            Security Teams as well as the customer.
+        action_desc: |
+            Please investigate this VPC Peering connection and terminate it
+            if it's connecting to a unapproved external VPC
+        to:
+          - CloudTeam@company.com
+          - security@company.com
+          - resource-contact
+        transport:
+          type: sqs
+          queue: https://sqs.us-east-1.amazonaws.com/XXXXXXXXXXXXXXX/cloud-custodian-mailer
+          region: us-east-1

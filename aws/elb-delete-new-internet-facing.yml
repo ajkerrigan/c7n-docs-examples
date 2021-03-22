@@ -1,0 +1,33 @@
+policies:
+
+  - name: elb-delete-new-internet-facing
+    resource: elb
+    mode:
+      type: cloudtrail
+      events:
+         - CreateLoadBalancer
+    description: |
+      Any newly created Classic Load Balanacers launched with
+      a internet-facing schema will be deleted right away.
+    filters:
+      - type: event
+        key: "detail.requestParameters.scheme"
+        op: eq
+        value: "internet-facing"
+    actions:
+      - delete
+      - type: notify
+        template: default.html
+        priority_header: 1
+        subject: "Deleted New Internet-Facing ELB - [custodian {{ account }} - {{ region }}]"
+        violation_desc: "Internet-Facing ELBs are not allowed and are deleted at launch."
+        action_desc: |
+           "Actions Taken: Your new ELB has been deleted.
+           Please launch a new non-internet-facing ELB"
+        to:
+           - CloudCustodian@Company.com
+           - event-owner
+        transport:
+           type: sqs
+           queue: https://sqs.us-east-1.amazonaws.com/12345678900/cloud-custodian-mailer
+           region: us-east-1

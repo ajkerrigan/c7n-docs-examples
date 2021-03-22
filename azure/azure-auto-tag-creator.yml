@@ -1,0 +1,12 @@
+policies:
+  - name: azure-auto-tag-creator
+    mode:
+      type: azure-event-grid
+      events: ['VmWrite', 'StorageWrite']
+    resource: azure.armresource
+    description: |
+      Tag all new VMs and StorageAccounts with the 'Creator Email' tag.
+      Note: 'resource-type' filter is not required because policy is not triggered by other resources.
+    actions:
+     - type: auto-tag-user
+       tag: CreatorEmail

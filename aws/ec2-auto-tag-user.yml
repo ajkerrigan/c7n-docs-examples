@@ -1,0 +1,17 @@
+policies:
+- name: ec2-auto-tag-user
+  resource: ec2
+  mode:
+    type: cloudtrail
+    role: arn:aws:iam::{account_id}:role/custodian-auto-tagger
+    # note {account_id} is optional. If you put that there instead of
+    # your actual account number, when the policy is provisioned it
+    # will automatically inherit the account_id properly
+    events:
+      - RunInstances
+  filters:
+    - tag:CreatorName: absent
+  actions:
+    - type: auto-tag-user
+      tag: CreatorName
+      principal_id_tag: CreatorId

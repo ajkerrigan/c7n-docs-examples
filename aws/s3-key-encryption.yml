@@ -1,0 +1,6 @@
+policies:
+  - name: s3-key-encryption
+    resource: s3
+    actions:
+      - type: encrypt-keys
+        crypto: aws:kms

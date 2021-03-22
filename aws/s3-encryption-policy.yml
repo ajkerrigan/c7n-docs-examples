@@ -1,0 +1,5 @@
+policies:
+  - name: s3-encryption-policy
+    resource: s3
+    actions:
+     - encryption-policy

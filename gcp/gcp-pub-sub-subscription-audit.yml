@@ -1,0 +1,20 @@
+policies:
+  - name: gcp-pub-sub-subscription-audit
+    resource: gcp.pubsub-subscription
+    mode:
+      type: gcp-audit
+      methods:
+        - "google.pubsub.v1.Subscriber.CreateSubscription"
+        - "google.pubsub.v1.Subscriber.UpdateSubscription"
+    filters:
+      - type: value
+        key: expirationPolicy.ttl
+        value:
+    actions:
+     - type: notify
+       to:
+         - email@address
+       format: txt
+       transport:
+         type: pubsub
+         topic: projects/my-gcp-project/topics/my-topic

@@ -1,0 +1,9 @@
+policies:
+    - name: tag-trim
+      description: |
+        Trims tags from resources to make additional space
+      resource: azure.vm
+      actions:
+       - type: tag-trim
+         preserve: ['TagName1', 'TagName2']
+         space: 3

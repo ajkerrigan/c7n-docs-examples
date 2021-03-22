@@ -1,0 +1,10 @@
+policies:
+  - name: app-service-cors-policy
+    description: |
+      Get all wildcard CORS configurations
+    resource: azure.webapp
+    filters:
+      - type: configuration
+        key: cors.allowedOrigins
+        value: '*'
+        op: contains

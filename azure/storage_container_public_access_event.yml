@@ -1,0 +1,19 @@
+policies:
+  - name: storage_container_public_access_event
+    description: 'Identity containers with public access'
+    mode:
+      type: azure-event-grid
+      events:
+        - StorageContainerWrite
+      provision-options:
+        identity:
+          type: UserAssigned
+          id: custodian_identity
+      execution-options:
+        output_dir: azure://<storage_account>.blob.core.windows.net/custodian
+    resource: azure.storage-container
+    filters:
+      - type: value
+        key: properties.publicAccess
+        op: not-equal
+        value: None   # Possible values: Blob, Container, None

@@ -1,0 +1,18 @@
+policies:
+  - name: storage-only-allow-datacenter-ips
+    description: |
+      Find all storage accounts which permit access
+      from any IP not in datacenter IP space
+    resource: azure.storage
+    filters:
+      - or:
+        - type: value
+          key: properties.networkAcls.defaultAction
+          value: 'Allow'
+
+        - not:
+          - type: firewall-rules
+            only:
+              - '8.8.8.8'
+              - '10.0.0.0/16'
+              - '20.0.0.0 - 20.10.0.0'

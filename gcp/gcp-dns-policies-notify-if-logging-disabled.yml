@@ -1,0 +1,15 @@
+policies:
+    - name: gcp-dns-policies-notify-if-logging-disabled
+      resource: gcp.dns-policy
+      filters:
+        - type: value
+          key: enableLogging
+          value: false
+      actions:
+        - type: notify
+          to:
+            - email@email
+          format: json
+          transport:
+            type: pubsub
+            topic: projects/cloud-custodian/topics/dns

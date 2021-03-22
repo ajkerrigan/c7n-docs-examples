@@ -1,0 +1,16 @@
+policies:
+  - name: azure-auto-tag-creator-resources
+    resource: azure.armresource
+    description: |
+      Tag all arm resources of the VMs, VNETs and Storage accounts with the
+      'Creator Email' tag; looking up to 10 days prior.
+    filters:
+      - type: resource-type
+        values:
+          - Microsoft.Network/virtualNetworks
+          - Microsoft.Storage/storageAccounts
+          - Microsoft.Compute/virtualMachines
+    actions:
+     - type: auto-tag-user
+       tag: CreatorEmail
+       days: 10

@@ -1,0 +1,10 @@
+policies:
+
+  - name: ec2-tag-instances
+    resource: ec2
+    filters:
+      - "tag:CostCenter": foobar
+    actions:
+      - type: tag
+        key: CostCenter
+        value: barrum

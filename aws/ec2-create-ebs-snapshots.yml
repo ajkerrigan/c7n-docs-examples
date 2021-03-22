@@ -1,0 +1,24 @@
+policies:
+  - name: ec2-create-ebs-snapshots
+    resource: ec2
+    actions:
+       - type: snapshot
+         copy-tags:
+             - CreatorName
+             - "Resource Contact"
+             - "Resource Purpose"
+             - Environment
+             - "Billing Cost Center"
+             - Name
+         tags:
+           CloudCustodian: true
+
+  - name: ebs-delete-old-ebs-snapshots
+    resource: ebs-snapshot
+    filters:
+        - type: age
+          days: 7
+          op: ge
+        - "tag:custodian_snapshot": present
+    actions:
+        - delete

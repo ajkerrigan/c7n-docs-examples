@@ -1,0 +1,7 @@
+policies:
+  - name: routes-to-specific-subnet
+    resource: azure.routetable
+    filters:
+      - type: value
+        key: properties.subnets[?ends_with(id, 'vnetname/subnets/subnetname')] | [0]
+        value: not-null

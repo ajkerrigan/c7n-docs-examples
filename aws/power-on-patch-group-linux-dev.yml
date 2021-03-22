@@ -1,0 +1,64 @@
+policies:
+
+  - name: power-on-patch-group-linux-dev
+    resource: ec2
+    mode:
+         type: periodic
+         schedule: "cron(0 3 ? 1/1 SUN#1 *)"
+    filters:
+         - "State.Name": stopped
+         - type: value
+           key: tag:Patch Group
+           op: eq
+           value: "Linux Dev"
+    actions:
+         - start
+         - type: tag
+           key: PowerOffWhenDone
+           value: "True"
+
+  - name: patching-exception-tag-linux-dev
+    resource: ec2
+    mode:
+         type: periodic
+         schedule: "cron(0 3 ? 1/1 SUN#1 *)"
+    filters:
+         - type: value
+           key: tag:Patch Group
+           op: eq
+           value: "Linux Dev"
+    actions:
+         - type: tag
+           key: PatchingInProgress
+           value: "True"
+
+  - name: patching-exception-removal-linux-dev
+    resource: ec2
+    mode:
+         type: periodic
+         schedule: "cron(0 13 ? 1/1 SUN#1 *)"
+    filters:
+         - type: value
+           key: tag:Patch Group
+           op: eq
+           value: "Linux Dev"
+    actions:
+         - type: unmark
+           tags: ["PatchingInProgress"]
+
+  - name: power-down-patch-group-linux-dev
+    resource: ec2
+    mode:
+         type: periodic
+         schedule: "cron(0 13 ? 1/1 SUN#1 *)"
+    filters:
+         - "State.Name": running
+         - "tag:PowerOffWhenDone": present
+         - type: value
+           key: tag:Patch Group
+           op: eq
+           value: "Linux Dev"
+    actions:
+         - stop
+         - type: unmark
+           tags: ["PowerOffWhenDone"]

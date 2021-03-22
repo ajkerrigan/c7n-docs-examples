@@ -1,0 +1,28 @@
+policies:
+  - name: restore-collections-throughput-during-on-hours
+    resource: azure.cosmosdb-collection
+    filters:
+      - type: parent
+        filter:
+            type: onhour
+            default_tz: pt
+    actions:
+      - type: restore-throughput-state
+        state-tag: on-hours-throughput
+
+  - name: save-collections-throughput-and-resize-during-off-hours
+    resource: azure.cosmosdb-collection
+    filters:
+      - type: parent
+        filter:
+            type: offhour
+            default_tz: pt
+      - type: offer
+        key: content.offerThroughput
+        op: gt
+        value: 800
+    actions:
+      - type: save-throughput-state
+        state-tag: on-hours-throughput
+      - type: replace-offer
+        throughput: 400

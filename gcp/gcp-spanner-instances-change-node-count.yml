@@ -1,0 +1,18 @@
+policies:
+  - name: gcp-spanner-instances-change-node-count
+    resource: gcp.spanner-instance
+    filters:
+      - type: value
+        key: nodeCount
+        op: gte
+        value: 2
+    actions:
+      - type: set
+        nodeCount: 1
+      - type: notify
+        subject: The node count for spanner instances was updated
+        to:
+          - email@address
+        transport:
+            type: pubsub
+            topic: projects/cloud-custodian/topics/demo-notifications

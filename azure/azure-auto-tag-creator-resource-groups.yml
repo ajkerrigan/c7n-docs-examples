@@ -1,0 +1,9 @@
+policies:
+  - name: azure-auto-tag-creator-resource-groups
+    resource: azure.resourcegroup
+    description: |
+      Tag all existing resource groups with the 'CreatorEmail' tag; looking up to 10 days prior.
+    actions:
+     - type: auto-tag-user
+       tag: CreatorEmail
+       days: 10

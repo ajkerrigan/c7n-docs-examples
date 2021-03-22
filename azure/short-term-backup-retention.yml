@@ -1,0 +1,7 @@
+policies:
+  - name: short-term-backup-retention
+    resource: azure.sqldatabase
+    filters:
+      - type: short-term-backup-retention
+        op: lt
+        retention-period-days: 14

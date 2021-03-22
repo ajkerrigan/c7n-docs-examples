@@ -1,0 +1,12 @@
+policies:
+  - name: notify
+    resource: azure.resourcegroup
+    actions:
+      - type: notify
+        template: default
+        subject: Hello World
+        to:
+          - someone@somewhere.com
+        transport:
+          type: asq
+          queue: https://storagename.queue.core.windows.net/queuename

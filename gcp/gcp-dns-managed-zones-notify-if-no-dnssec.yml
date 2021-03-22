@@ -1,0 +1,16 @@
+policies:
+    - name: gcp-dns-managed-zones-notify-if-no-dnssec
+      resource: gcp.dns-managed-zone
+      filters:
+        - type: value
+          key: dnssecConfig.state
+          # off without quotes is treated as bool False
+          value: "off"
+      actions:
+        - type: notify
+          to:
+            - email@email
+          format: json
+          transport:
+            type: pubsub
+            topic: projects/cloud-custodian/topics/dns

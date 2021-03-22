@@ -1,0 +1,35 @@
+policies:
+  - name: notify-new-resource-group
+    description: |
+      Generates a Teams notification when a new resource group is created
+    resource: azure.resourcegroup
+    mode:
+      type: azure-event-grid
+      events: [{
+        resourceProvider: Microsoft.Resources/subscriptions/resourceGroups,
+        event: write
+      }]
+    actions:
+      - type: webhook
+        url: <your_webhook_here>
+        batch: false
+        body: >
+          {
+            "@context": `https://schema.org/extensions`,
+            "@type": `MessageCard`,
+            "themeColor": `0072C6`,
+            "title": `New Resource Group Created`,
+            "text": join('', [`A new resource group has been created in subscription `, account_id, `.\n\nResource Group Name: `, resource.name, `\n\nResource Group Location: `, resource.location])
+            "potentialAction": [
+              {
+                "@type": `OpenUri`,
+                "name": `Open In Portal`,
+                "targets": [
+                {
+                  "os": `default`,
+                  "uri": join('',[`https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource`, resource.id, `/overview`])
+                }
+                ]
+              }
+            ]
+          }

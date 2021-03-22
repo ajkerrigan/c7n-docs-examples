@@ -1,0 +1,10 @@
+policies:
+  - name: gcp-load-balancing-ssl-policies-delete
+    resource: gcp.loadbalancer-ssl-policy
+    filters:
+      - type: value
+        key: minTlsVersion
+        op: ne
+        value: TLS_1_2
+    actions:
+      - type: delete

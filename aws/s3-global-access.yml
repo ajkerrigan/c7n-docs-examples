@@ -1,0 +1,11 @@
+policies:
+
+- name: s3-global-access
+  resource: s3
+  filters:
+    - type: global-grants
+  actions:
+    - type: delete-global-grants
+      grantees:
+        - "http://acs.amazonaws.com/groups/global/AllUsers"
+        - "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"

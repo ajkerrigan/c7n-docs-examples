@@ -1,0 +1,69 @@
+vars:
+  notify: &notify
+    type: notify
+    to:
+      - slack://#slack-channel
+    subject: "EIP - No Instances Attached - [custodian {{ account }} - {{ region }}]"
+    transport:
+      type: sqs
+      queue: https://sqs.us-east-2.amazonaws.com/123456789012/mailer
+      region: us-east-2
+  run_mode: &run_mode
+    type: periodic
+    schedule: "rate(1 day)"
+    tags:
+      app: "c7n"
+      env: "tools"
+      account: "{account_id}"
+  eip_filters: &eip_filters
+    - type: value
+      key: InstanceId
+      value: absent
+    - type: value
+      key: AssociationId
+      value: absent
+
+policies:
+  - name: unused-eip-mark
+    resource: network-addr
+    description: "Mark any EIP with no instances attached for action in 7 days"
+    filters:
+      - "tag:maid_status_eip": absent
+      - and: *eip_filters
+    mode:
+      <<: *run_mode
+    actions:
+      - type: mark-for-op
+        tag: maid_status_eip
+        days: 7
+        op: release
+
+  - name: unused-eip-unmark-if-in-use
+    resource: network-addr
+    description: |
+      Remove the maid_status_eip tag from any eip which has instances attached
+    filters:
+      - "tag:maid_status_eip": not-null
+      - not:
+        - or: *eip_filters
+    mode:
+      <<: *run_mode
+    actions:
+      - type: remove-tag
+        tags: [maid_status_eip]
+
+  - name: unused-eip-action
+    resource: network-addr
+    description: "Release EIP after 7 days of having no instances"
+    filters:
+      - "tag:maid_status_eip": not-null
+      - type: marked-for-op
+        op: release
+        tag: maid_status_eip
+    mode:
+      <<: *run_mode
+    actions:
+      - type: release
+      - <<: *notify
+        action_desc: "EIP released"
+        violation_desc: "EIP has been unused for 7 days"

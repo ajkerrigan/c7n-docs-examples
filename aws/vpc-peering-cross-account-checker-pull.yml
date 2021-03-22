@@ -1,0 +1,45 @@
+policies:
+
+ - name: vpc-peering-cross-account-checker-pull
+   resource: peering-connection
+   description: |
+     Checks existing VPC Peering Connections to see if the Accepter
+     and Requester account numbers are both internally owned accounts.
+     If a connection is going to/from an external AWS account then the
+     cloud and security teams are notified of the violating peering connection.
+   filters:
+     - or:
+         - type: value
+           key: "RequesterVpcInfo.OwnerId"
+           op: not-in
+           value_from:
+             url: s3://s3bucketname/AccountNumbers.csv
+             format: csv2dict
+         - type: value
+           key: "AccepterVpcInfo.OwnerId"
+           op: not-in
+           value_from:
+             url: s3://s3bucketname/AccountNumbers.csv
+             format: csv2dict
+   actions:
+      - type: notify
+        template: default.html
+        priority_header: 1
+        subject: "ATTN!! External VPC Peering Violation [custodian {{ account }} - {{ region }}]"
+        violation_desc: |
+            VPC Peers are not to be setup to or from external AWS accounts
+            so this policy verifies that both the source and destination
+            accounts are internally owned. If the peering connection is going
+            to/from an external account, this policy will email the Cloud and
+            Security Teams as well as the customer.
+        action_desc: |
+            Please investigate this VPC Peering connection and terminate it
+            if it's connecting to a unapproved external VPC
+        to:
+          - CloudTeam@company.com
+          - security@company.com
+          - resource-contact
+        transport:
+          type: sqs
+          queue: https://sqs.us-east-1.amazonaws.com/XXXXXXXXXXXXXXX/cloud-custodian-mailer
+          region: us-east-1

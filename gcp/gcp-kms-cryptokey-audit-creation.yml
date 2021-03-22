@@ -1,0 +1,21 @@
+policies:
+    - name: gcp-kms-cryptokey-audit-creation
+      resource: gcp.kms-cryptokey
+      mode:
+        type: gcp-audit
+        methods:
+          - CreateCryptoKey
+      filters:
+        - type: value
+          key: primary.protectionLevel
+          op: not-in
+          value:
+            - HSM
+      actions:
+        - type: notify
+          to:
+            - email@email
+          format: json
+          transport:
+            type: pubsub
+            topic: projects/my-gcp-project/topics/my-topic

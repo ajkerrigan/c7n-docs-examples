@@ -1,0 +1,15 @@
+policies:
+  - name: gcp-pub-sub-snapshots-notify-if-topic-deleted
+    resource: gcp.pubsub-snapshot
+    filters:
+      - type: value
+        key: topic
+        value: _deleted-topic_
+    actions:
+     - type: notify
+       to:
+         - email@address
+       format: txt
+       transport:
+         type: pubsub
+         topic: projects/my-gcp-project/topics/my-topic

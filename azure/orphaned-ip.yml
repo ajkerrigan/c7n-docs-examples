@@ -1,0 +1,16 @@
+policies:
+  - name: orphaned-ip
+    resource: azure.publicip
+    filters:
+      - type: value
+        key: properties.ipConfiguration
+        value: null
+    actions:
+      - type: notify
+        template: default
+        subject: Orphaned Public IP resource
+        to:
+          - someone@somewhere.com
+        transport:
+          type: asq
+          queue: https://storagename.queue.core.windows.net/queuename

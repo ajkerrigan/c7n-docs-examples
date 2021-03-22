@@ -1,0 +1,7 @@
+policies:
+  - name: s3-attach-encryption
+    resource: s3
+    actions:
+      - type: attach-encrypt
+        role: arn:aws:iam::123456789012:role/my-role
+        topic: arn:aws:sns::123456789012:my-topic
